@@ -1,7 +1,10 @@
 package management
 
 import (
+	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"net"
+	"net/http"
 	"reflect"
 	"strconv"
 	"time"
@@ -296,4 +299,37 @@ func DecodeNfProfile(source interface{}, format string) (models.NfProfile, error
 		return target, err
 	}
 	return target, nil
+}
+
+func HTTPGetNetworkFunctions(c *gin.Context) {
+	var nrfInfo *models.NrfInfo
+
+	// step 1: retrieve http request body
+	_, err := c.GetRawData()
+	if err != nil {
+		problemDetail := models.ProblemDetails{
+			Title:  "System failure",
+			Status: http.StatusInternalServerError,
+			Detail: err.Error(),
+			Cause:  "SYSTEM_FAILURE",
+		}
+		logger.ManagementLog.Errorf("Get Request Body error: %+v", err)
+		c.JSON(http.StatusInternalServerError, problemDetail)
+		return
+	}
+
+	nrfInfo = GetNrfInfo()
+	bytes, err := json.Marshal(nrfInfo)
+
+	if err != nil {
+		logger.ManagementLog.Errorln(err)
+		problemDetails := models.ProblemDetails{
+			Status: http.StatusInternalServerError,
+			Cause:  "SYSTEM_FAILURE",
+			Detail: err.Error(),
+		}
+		c.JSON(http.StatusInternalServerError, problemDetails)
+	} else {
+		c.Data(http.StatusOK, "application/json", bytes)
+	}
 }

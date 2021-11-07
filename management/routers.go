@@ -131,4 +131,11 @@ var routes = Routes{
 		"/subscriptions",
 		HTTPCreateSubscription,
 	},
+
+	{
+		"GetNetworkFunctions",
+		strings.ToUpper("Get"),
+		"/networkFunctions",
+		HTTPGetNetworkFunctions,
+	},
 }
